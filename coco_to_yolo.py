@@ -1,8 +1,10 @@
+import os
+
 import cv2
 import json
 
-class ConvertCOCOToYOLO:
 
+class ConvertCOCOToYOLO:
     """
     Takes in the path to COCO annotations and outputs YOLO annotations in multiple .txt files.
     COCO annotation are to be JSON formart as follows:
@@ -25,10 +27,10 @@ class ConvertCOCOToYOLO:
     def __init__(self, img_folder, json_path):
         self.img_folder = img_folder
         self.json_path = json_path
-        
 
     def get_img_shape(self, img_path):
         img = cv2.imread(img_path)
+
         try:
             return img.shape
         except AttributeError:
@@ -53,22 +55,22 @@ class ConvertCOCOToYOLO:
         size = self.get_img_shape(img_path)
         xmax, xmin = sorting(x1, x2)
         ymax, ymin = sorting(y1, y2)
-        dw = 1./size[1]
-        dh = 1./size[0]
-        x = (xmin + xmax)/2.0
-        y = (ymin + ymax)/2.0
-        w = xmax — xmin
-        h = ymax — ymin
-        x = x*dw
-        w = w*dw
-        y = y*dh
-        h = h*dh
-        return (x,y,w,h)
+        dw = 1. / size[1]
+        dh = 1. / size[0]
+        x = (xmin + xmax) / 2.0
+        y = (ymin + ymax) / 2.0
+        w = xmax - xmin
+        h = ymax - ymin
+        x = x * dw
+        w = w * dw
+        y = y * dh
+        h = h * dh
+        return (x, y, w, h)
 
-    def convert(self,annotation_key='annotations',img_id='image_id',cat_id='category_id',bbox='bbox'):
+    def convert(self, annotation_key='annotations', img_id='image_id', cat_id='category_id', bbox='bbox'):
         # Enter directory to read JSON file
         data = json.load(open(self.json_path))
-        
+
         check_set = set()
 
         # Retrieve data
@@ -77,28 +79,35 @@ class ConvertCOCOToYOLO:
             # Get required data
             image_id = f'{data[annotation_key][i][img_id]}'
             category_id = f'{data[annotation_key][i][cat_id]}'
-            bbox = training_data[annotation_key][i][bbox]
+            bbox = data[annotation_key][i]["bbox"]
+
+            # Retrieve Image Name
+            image_name = ""
+            images_metadata = data["images"]
+            for image_object in images_metadata:
+                if image_object["id"] == int(image_id):
+                    image_name = image_object["file_name"]
 
             # Retrieve image.
-            if self.img_folder == None:
-                image_path = f'{image_id}.jpg'
-            else:
-                image_path = f'./{self.img_folder}/{image_id}.jpg'
+            # if self.img_folder is None:
+            #     image_path = f'{image_id}.jpg'
+            # else:
+            #     image_path = f'./{self.img_folder}/{image_id}.jpg'
 
-
+            image_path = os.path.join(self.img_folder, image_name)
             # Convert the data
             kitti_bbox = [bbox[0], bbox[1], bbox[2] + bbox[0], bbox[3] + bbox[1]]
             yolo_bbox = self.convert_labels(image_path, kitti_bbox[0], kitti_bbox[1], kitti_bbox[2], kitti_bbox[3])
-            
+
             # Prepare for export
-            
+
             filename = f'{image_id}.txt'
-            content =f"{category_id} {yolo_bbox[0]} {yolo_bbox[1]} {yolo_bbox[2]} {yolo_bbox[3]}"
+            content = f"{category_id} {yolo_bbox[0]} {yolo_bbox[1]} {yolo_bbox[2]} {yolo_bbox[3]}"
 
             # Export 
             if image_id in check_set:
                 # Append to existing file as there can be more than one label in each image
-                file = open(filename, "a”)
+                file = open(filename, "a")
                 file.write("\n")
                 file.write(content)
                 file.close()
@@ -106,10 +115,11 @@ class ConvertCOCOToYOLO:
             elif image_id not in check_set:
                 check_set.add(image_id)
                 # Write files
-                file = open(filename, "w”)
+                file = open(filename, "w")
                 file.write(content)
                 file.close()
 
-
+import pathlib
+current_path = pathlib.Path(__file__).parent.resolve()
 # To run in as a class
-ConvertCOCOToYOLO(img_path=None,json_path='training_data.json').convert()
+ConvertCOCOToYOLO(img_folder=os.path.join(current_path,"dataset/images"), json_path='dataset/test.json').convert()
