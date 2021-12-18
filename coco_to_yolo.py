@@ -140,4 +140,4 @@ class ConvertCOCOToYOLO:
 
 current_path = pathlib.Path(__file__).parent.resolve()
 # To run in as a class
-ConvertCOCOToYOLO(img_folder="dataset", json_path='dataset/test.json').convert()
+ConvertCOCOToYOLO(img_folder="dataset/images", json_path='dataset/test.json').convert()
