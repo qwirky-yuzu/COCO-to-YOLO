@@ -100,8 +100,8 @@ class ConvertCOCOToYOLO:
             for image_object in images_metadata:
                 if image_object["id"] == int(image_id):
                     image_name = image_object["file_name"]
-                    image_height = image_object["width"]
-                    image_width = image_object["height"]
+                    image_width = image_object["width"]
+                    image_height = image_object["height"]
 
             # Convert the data
             kitti_bbox = [bbox[0], bbox[1], bbox[2] + bbox[0], bbox[3] + bbox[1]]
