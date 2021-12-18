@@ -7,7 +7,8 @@ import pathlib
 
 class ConvertCOCOToYOLO:
     """
-    Takes in the path to COCO annotations and outputs YOLO annotations in multiple .txt files.
+    Takes in the path to COCO annotations and optional the path, where the YOLO annotations shall be saved
+    in multiple .txt files.
     COCO annotation are to be JSON formart as follows:
 
         "annotations":{
@@ -91,7 +92,7 @@ class ConvertCOCOToYOLO:
             category_id = f'{data[annotation_key][i][cat_id]}'
             bbox = data[annotation_key][i]["bbox"]
 
-            # Retrieve Image Name
+            # Retrieve Image Name and width and height
             image_name = ""
             image_height = 0
             image_width = 0
@@ -129,4 +130,4 @@ class ConvertCOCOToYOLO:
 
 
 # To run in as a class
-ConvertCOCOToYOLO(json_path='dataset/test.json', label_path="wfead/").convert()
+ConvertCOCOToYOLO(json_path='dataset/test.json', label_path="dataset/labels").convert()
