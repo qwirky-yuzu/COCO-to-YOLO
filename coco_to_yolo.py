@@ -109,10 +109,9 @@ class ConvertCOCOToYOLO:
                                             (image_height, image_width))
 
             # Prepare for export
-            filename = f'{image_name}.txt'
+            filename = f'{image_name[:-4]}.txt'
             content = f"{category_id} {yolo_bbox[0]} {yolo_bbox[1]} {yolo_bbox[2]} {yolo_bbox[3]}"
             path_to_file = os.path.join(self.label_path, filename)
-            print(path_to_file)
             # Export 
             if image_id in check_set:
                 # Append to existing file as there can be more than one label in each image
