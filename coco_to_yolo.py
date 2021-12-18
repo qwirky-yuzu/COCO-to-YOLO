@@ -1,7 +1,6 @@
 import os
 from json import JSONDecodeError
 from os import path
-import cv2
 import json
 import pathlib
 
@@ -26,38 +25,26 @@ class ConvertCOCOToYOLO:
         
     """
 
-    def __init__(self, img_folder, json_path):
-        self.img_folder = img_folder
+    def __init__(self, json_path, label_path):
         self.json_path = json_path
+        self.label_path = label_path
 
-    def check_path_variables(self):
-
-        if self.img_folder is None or self.json_path is None:
+    def check_paths(self):
+        if self.label_path is None or not path.exists(self.label_path):
+            self.label_path = pathlib.Path(__file__).parent.resolve()
+        if self.json_path is None:
             return False
-        if path.exists(self.img_folder) and path.exists(self.json_path):
-            if self.get_img_shape(os.path.join(self.img_folder, os.listdir(self.img_folder)[0])) is not None:
-                try:
-                    json.load(open(self.json_path))
-                    return True
-                except JSONDecodeError:
-                    print("cant't open Json File")
-                    return False
-            else:
+        if path.exists(self.json_path):
+            try:
+                json.load(open(self.json_path))
+                return True
+            except JSONDecodeError:
+                print("cant't open Json File")
                 return False
         else:
-            print("Path to images or json file are not correctly defined")
             return False
 
-    def get_img_shape(self, img_path):
-        img = cv2.imread(img_path)
-
-        try:
-            return img.shape
-        except AttributeError:
-            print('error, no image found at', img_path)
-            return None
-
-    def convert_labels(self, img_path, x1, y1, x2, y2):
+    def convert_labels(self, x1, y1, x2, y2, size):
         """
         Definition: Parses label files to extract label and bounding box
         coordinates. Converts (x1, y1, x1, y2) KITTI format to
@@ -72,7 +59,6 @@ class ConvertCOCOToYOLO:
                 lmax, lmin = l2, l1
                 return lmax, lmin
 
-        size = self.get_img_shape(img_path)
         xmax, xmin = sorting(x1, x2)
         ymax, ymin = sorting(y1, y2)
         dw = 1. / size[1]
@@ -89,7 +75,7 @@ class ConvertCOCOToYOLO:
 
     def convert(self, annotation_key='annotations', img_id='image_id', cat_id='category_id', bbox='bbox'):
 
-        if not self.check_path_variables():
+        if not self.check_paths():
             return None
 
         # Enter directory to read JSON file
@@ -107,21 +93,25 @@ class ConvertCOCOToYOLO:
 
             # Retrieve Image Name
             image_name = ""
+            image_height = 0
+            image_width = 0
             images_metadata = data["images"]
             for image_object in images_metadata:
                 if image_object["id"] == int(image_id):
                     image_name = image_object["file_name"]
+                    image_height = image_object["width"]
+                    image_width = image_object["height"]
 
-            image_path = os.path.join(self.img_folder, image_name)
             # Convert the data
             kitti_bbox = [bbox[0], bbox[1], bbox[2] + bbox[0], bbox[3] + bbox[1]]
-            yolo_bbox = self.convert_labels(image_path, kitti_bbox[0], kitti_bbox[1], kitti_bbox[2], kitti_bbox[3])
+            yolo_bbox = self.convert_labels(kitti_bbox[0], kitti_bbox[1], kitti_bbox[2], kitti_bbox[3],
+                                            (image_height, image_width))
 
             # Prepare for export
-            path_to_dataset = pathlib.Path(self.img_folder).parent.resolve()
             filename = f'{image_name}.txt'
             content = f"{category_id} {yolo_bbox[0]} {yolo_bbox[1]} {yolo_bbox[2]} {yolo_bbox[3]}"
-            path_to_file = os.path.join(path_to_dataset, "labels", filename)
+            path_to_file = os.path.join(self.label_path, filename)
+            print(path_to_file)
             # Export 
             if image_id in check_set:
                 # Append to existing file as there can be more than one label in each image
@@ -138,6 +128,5 @@ class ConvertCOCOToYOLO:
                 file.close()
 
 
-current_path = pathlib.Path(__file__).parent.resolve()
 # To run in as a class
-ConvertCOCOToYOLO(img_folder="dataset/images", json_path='dataset/test.json').convert()
+ConvertCOCOToYOLO(json_path='dataset/test.json', label_path="wfead/").convert()
