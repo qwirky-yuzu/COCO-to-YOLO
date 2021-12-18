@@ -129,5 +129,6 @@ class ConvertCOCOToYOLO:
                 file.close()
 
 
-# To run in as a class
-ConvertCOCOToYOLO(json_path='dataset/test.json', label_path="dataset/labels").convert()
+if __name__ == "__main__":
+    # To run in as a class
+    ConvertCOCOToYOLO(json_path='dataset/test.json', label_path="dataset/labels").convert()
