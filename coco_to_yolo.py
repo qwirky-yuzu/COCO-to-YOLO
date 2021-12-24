@@ -112,4 +112,5 @@ class ConvertCOCOToYOLO:
 
 
 # To run in as a class
-ConvertCOCOToYOLO(img_path=None,json_path='training_data.json').convert()
+if __name__ == "__main__":
+    ConvertCOCOToYOLO(img_path='./path_to_imgs',json_path='./path_to_training_data.json').convert()
