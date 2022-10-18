@@ -77,7 +77,7 @@ class ConvertCOCOToYOLO:
             # Get required data
             image_id = f'{data[annotation_key][i][img_id]}'
             category_id = f'{data[annotation_key][i][cat_id]}'
-            bbox = data[annotation_key][i][bbox]
+            bbox = data[annotation_key][i]['bbox']
 
             # Retrieve image.
             if self.img_folder == None:
