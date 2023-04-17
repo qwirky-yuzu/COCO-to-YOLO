@@ -57,8 +57,8 @@ class ConvertCOCOToYOLO:
         dh = 1./size[0]
         x = (xmin + xmax)/2.0
         y = (ymin + ymax)/2.0
-        w = xmax — xmin
-        h = ymax — ymin
+        w = xmax - xmin
+        h = ymax - ymin
         x = x*dw
         w = w*dw
         y = y*dh
@@ -98,7 +98,7 @@ class ConvertCOCOToYOLO:
             # Export 
             if image_id in check_set:
                 # Append to existing file as there can be more than one label in each image
-                file = open(filename, "a”)
+                file = open(filename, "a")
                 file.write("\n")
                 file.write(content)
                 file.close()
@@ -106,11 +106,11 @@ class ConvertCOCOToYOLO:
             elif image_id not in check_set:
                 check_set.add(image_id)
                 # Write files
-                file = open(filename, "w”)
+                file = open(filename, "w")
                 file.write(content)
                 file.close()
 
 
 # To run in as a class
 if __name__ == "__main__":
-    ConvertCOCOToYOLO(img_path='./path_to_imgs',json_path='./path_to_data.json').convert()
+    ConvertCOCOToYOLO(img_folder='./path_to_imgs',json_path='./path_to_data.json').convert()
